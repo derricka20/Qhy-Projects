@@ -1,4 +1,4 @@
-Here’s an updated Python script that not only checks for the presence of required runtimes but also attempts to auto-install any missing ones using common package managers (like `apt`, `brew`, or `choco`) based on the operating system.
+Updated Python script that not only checks for the presence of required runtimes but also attempts to auto-install any missing ones using common package managers (like `apt`, `brew`, or `choco`) based on the operating system.
 
 ---
 
@@ -122,4 +122,4 @@ if __name__ == "__main__":
 
 ---
 
-This script simplifies the process of ensuring runtime environments are ready for your project. Let me know if you'd like to enhance it further! 🚀
+This script simplifies the process of ensuring runtime environments are ready for your project.🚀
