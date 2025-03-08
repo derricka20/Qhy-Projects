@@ -1,0 +1,3 @@
+# Ignore files and folders
+*.tmp
+build/
