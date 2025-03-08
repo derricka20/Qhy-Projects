@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Qhy-ProjectBuilder")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+753ac726970ad851a47046dc3d5d81af90e0b467")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1a2a7d5d70d4f694fab8f436ed04f3b4dff611c9")]
 [assembly: System.Reflection.AssemblyProductAttribute("Qhy-ProjectBuilder")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Qhy-ProjectBuilder")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
