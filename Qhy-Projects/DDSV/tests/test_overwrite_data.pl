@@ -1,3 +1,10 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use lib '../src/';  # Add the path to the core script or modules
+require 'ddsv_core.pl';  # Load the core script to access its functions
+
+# Test for overwrite data
 sub test_overwrite_data {
     print "\nRunning test: Overwriting Existing Data\n";
 

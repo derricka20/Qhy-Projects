@@ -1,3 +1,10 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use lib '../src/';  # Add the path to the core script or modules
+require 'ddsv_core.pl';  # Load the core script to access its functions
+
+# Test for large data
 sub test_large_data {
     print "\nRunning test: Large Data Handling\n";
 

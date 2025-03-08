@@ -1,3 +1,10 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use lib '../src/';  # Add the path to the core script or modules
+require 'ddsv_core.pl';  # Load the core script to access its functions
+
+# Test for unexpected file modifications
 sub test_unexpected_file_modifications {
     print "\nRunning test: Unexpected File Modifications\n";
 

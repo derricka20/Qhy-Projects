@@ -5,33 +5,52 @@ use File::Spec;
 use File::Basename;
 use JSON;
 use Data::Dumper;
+use Cwd;
 
 # DDSV Core Configuration
+my $base_dir = getcwd();  # Get the current working directory
 my %config = (
-    storage_path => 'DDSV/data/',      # Default data storage directory
-    log_file     => 'DDSV/logs/ddsv.log',  # Log file location
-    extensions   => 'DDSV/extensions/', # Extensions folder
+    storage_path => "$base_dir/data/",       # Default data storage directory
+    log_file     => "$base_dir/logs/ddsv.log",  # Log file location
+    extensions   => "$base_dir/extensions/",    # Extensions folder
 );
 
 # Initialize DDSV
 sub initialize_ddsv {
     print "Initializing Dynamic Data Storage Vault (DDSV)...\n";
     validate_storage_path($config{storage_path});
+    validate_storage_path($config{log_file});
     log_message("DDSV initialized successfully.");
 }
 
 # Validate the storage path
 sub validate_storage_path {
     my $path = shift;
-    unless (-d $path) {
-        mkdir $path or die "Error: Unable to create storage path $path: $!\n";
-        print "Created storage directory: $path\n";
+    my $dir = $path;
+
+    # If the path points to a file, extract the directory part
+    if ($path =~ /^(.*\/)[^\/]+$/) {
+        $dir = $1;  # Get the directory portion of the path
+    }
+
+    unless (-d $dir) {
+        mkdir $dir or die "Error: Unable to create directory $dir: $!\n";
+        print "Created directory: $dir\n";
     }
 }
 
 # Log a message to the log file
 sub log_message {
     my $message = shift;
+    my $log_dir = $config{log_file};
+    
+    # Extract the directory path from the log file path
+    $log_dir =~ s/\/[^\/]+$//;
+
+    unless (-d $log_dir) {
+        mkdir $log_dir or die "Error: Unable to create log directory $log_dir: $!\n";
+    }
+
     open my $log_fh, '>>', $config{log_file} or die "Error: Unable to write to log file: $!\n";
     print $log_fh localtime() . " - $message\n";
     close $log_fh;
@@ -108,8 +127,7 @@ sub main_menu {
     print "2. Retrieve Data\n";
     print "3. List Keys\n";
     print "4. Load Extensions\n";
-    print "5. Run All Tests\n";
-    print "6. Exit\n";
+    print "5. Exit\n";
     print "Enter your choice: ";
 
     my $choice = <STDIN>;
@@ -142,9 +160,8 @@ sub main_menu {
     }
     elsif ($choice == 4) {
         load_extensions();
-    } elsif ($choice == 5) {
-        run_all_tests();  # Call the new function here
-    } elsif ($choice == 6) {
+    }
+    elsif ($choice == 5) {
         print "Exiting DDSV. Goodbye!\n";
         exit;
     }
@@ -153,39 +170,9 @@ sub main_menu {
     }
 }
 
-sub run_all_tests {
-    my $test_dir = 'DDSV/tests/';  # Path to the tests folder
-
-    # Check if the test directory exists
-    unless (-d $test_dir) {
-        print "Error: Test directory $test_dir not found.\n";
-        return;
-    }
-
-    # Open the directory and find all test files
-    opendir(my $dir, $test_dir) or die "Error: Unable to open $test_dir: $!\n";
-    my @test_files = grep { /\.pl$/ } readdir($dir);
-    closedir($dir;
-
-    # Execute each test file
-    print "Running all test cases...\n";
-    foreach my $test_file (@test_files) {
-        my $test_path = "$test_dir/$test_file";
-        print "\nRunning $test_file...\n";
-
-        # Execute the test file
-        my $result = system("perl $test_path");
-        if ($result == 0) {
-            print "$test_file completed successfully.\n";
-        } else {
-            print "$test_file failed with error code: $?.\n";
-        }
-    }
-}
-
-
 # Entry Point
 initialize_ddsv();
 while (1) {
     main_menu();
 }
+

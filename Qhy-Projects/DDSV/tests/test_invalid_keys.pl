@@ -1,7 +1,8 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use lib '../src/';  # Add the path to the core script or modules
+# Add the absolute path to the src directory to @INC
+use lib '/workspaces/Qhy-Projects/Qhy-Projects/DDSV/src';  # Add the path to the core script or modules
 require 'ddsv_core.pl';  # Load the core script to access its functions
 
 # Test for invalid keys
