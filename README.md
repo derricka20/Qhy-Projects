@@ -100,6 +100,52 @@ Efficient Data Retrieval: The system's dynamic linking makes retrieving, updatin
 
 ---
 
+Qhy-Projects/
+│
+├── /core/
+│   ├── QhyCompiler.cs              # Core compiler logic
+│   ├── SyntaxEngine.cs             # Parser + tokenizer
+│   ├── MountingProtocol.cs         # Hardware/software interface logic
+│   └── SecurityModule.cs           # Secure sandboxing & mounting
+│
+├── /runtime/
+│   ├── QuantumVM.cs                # Virtual Machine with quantum layer
+│   ├── SeedPodEngine.cs           # Core pod processor for world logic
+│   ├── RollbackManager.cs         # Custom rollback/versioning system
+│   └── ContainerHandler.cs        # Self-contained pod (zeroPod) manager
+│
+├── /unity-integration/
+│   ├── QhyAvatarAI.cs              # Unity C# scripts for AI avatars
+│   ├── WorldBuilder.cs            # Procedural environment hooks
+│   ├── NeuralSync.cs              # Link Unity AI to Qhy optimization layer
+│   └── QhySDK.unitypackage        # Exportable Unity package
+│
+├── /quantum-layer/
+│   ├── qiskit_interface.py        # Python-Qhy link via Qiskit
+│   ├── qhy_quantum_core.py        # Quantum optimization rules
+│   ├── qsms_gateway.py            # Secure message service protocol
+│   └── quantum_bridge.qs          # Q# integration example
+│
+├── /docs/
+│   ├── README.md
+│   ├── LICENSE
+│   ├── CONTRIBUTING.md
+│   ├── ROADMAP.md
+│   └── architecture-diagram.png
+│
+├── /examples/
+│   ├── hello_world.qhy            # Basic syntax example
+│   ├── ai_optimizer.qhy           # AI workload optimizer
+│   ├── hardware_mount.qhy         # Auto-mounting configuration
+│   └── metaverse_sim.qhy          # Virtual city generation logic
+│
+├── /updates/
+│   └── dynamic_links.json         # Maps new file releases to seed pods
+│
+└── qhy_config.yaml                # Config file to bind systems
+
+---
+
 # Extensions for DDSV and its use for building fast applications:
 
 ### Extensions for DDSV
