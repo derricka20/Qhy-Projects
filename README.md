@@ -100,6 +100,7 @@ Efficient Data Retrieval: The system's dynamic linking makes retrieving, updatin
 
 ---
 
+~~~
 Qhy-Projects/
 │
 ├── /core/
@@ -143,7 +144,7 @@ Qhy-Projects/
 │   └── dynamic_links.json         # Maps new file releases to seed pods
 │
 └── qhy_config.yaml                # Config file to bind systems
-
+~~~
 ---
 
 # Extensions for DDSV and its use for building fast applications:
