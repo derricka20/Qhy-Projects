@@ -50,6 +50,8 @@ def create_file_tree(base_path, tree):
                 os.makedirs(path, exist_ok=True)
                 create_file_tree(path, content)  # Recursively create subdirectories and files
             else:  # It's a file
+                if '../' in path or '..\\' in path:
+                    raise Exception('Invalid file path')
                 with open(path, 'w') as f:
                     f.write(content)  # Create an empty file or write content if provided
         print(f"File tree created successfully in: {base_path}")
