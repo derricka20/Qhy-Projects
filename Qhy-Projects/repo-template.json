@@ -1,0 +1,73 @@
+{
+  "name": "QhySync Project Template",
+  "description": "Starter template for all QhySync projects, including workflows, PR templates, and modular structure",
+  "version": "1.0.0",
+  "author": "Derrick Adkison / Kumplex Media Group",
+  "license": "MIT",
+  "folders": [
+    {
+      "path": "src/main",
+      "description": "Main source code folder"
+    },
+    {
+      "path": "tests",
+      "description": "Unit and integration tests folder"
+    },
+    {
+      "path": "docs",
+      "description": "Project documentation"
+    },
+    {
+      "path": ".github/workflows",
+      "description": "GitHub Actions workflows folder"
+    },
+    {
+      "path": ".github/config",
+      "description": "Configuration for QhySync developer profile"
+    }
+  ],
+  "files": [
+    {
+      "path": ".github/config/qhysync-profile.yml",
+      "description": "Developer profile and style guide for commits, PRs, and docs"
+    },
+    {
+      "path": ".github/workflows/qhysync-style.yml",
+      "description": "Workflow enforcing commit messages, PR template, optional AI PR notes"
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "description": "Standardized PR template aligned with QhySync style"
+    },
+    {
+      "path": "README.md",
+      "description": "Root README in QhySync style"
+    },
+    {
+      "path": "docs/README.md",
+      "description": "Documentation README for modular project setup"
+    },
+    {
+      "path": ".gitignore",
+      "description": "Ignore rules for Python, Node, and IDE artifacts"
+    },
+    {
+      "path": "LICENSE",
+      "description": "Project license"
+    }
+  ],
+  "placeholders": [
+    {
+      "name": "project_name",
+      "description": "Replace with actual project name"
+    },
+    {
+      "name": "author",
+      "description": "Replace with developer name"
+    },
+    {
+      "name": "description",
+      "description": "Replace with project description"
+    }
+  ]
+}
