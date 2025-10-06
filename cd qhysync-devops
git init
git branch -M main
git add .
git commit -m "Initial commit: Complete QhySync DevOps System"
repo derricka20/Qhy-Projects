@@ -1,0 +1,6 @@
+gh repo create derricka20/qhysync-devops \
+  --private \
+  --description "Complete QhySync DevOps System with Projects for QhyNLP" \
+  --source=. \
+  --remote=origin \
+  --push
