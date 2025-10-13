@@ -1,0 +1,23 @@
+## Summary
+Add a JSON-based `repo-template` file to standardize new QhySync projects.  
+This template defines the folder structure, essential files, and placeholders for project setup.
+
+## Changes
+- Added `repo-template.json` with:
+  - Folder structure for `src/`, `tests/`, `docs/`, `.github/workflows`, `.github/config`
+  - Essential files: `README.md`, `docs/README.md`, `.gitignore`, LICENSE, workflow, and PR template references
+  - Placeholders for project name, author, and description
+- Aligns new projects with QhySync developer profile and modular standards
+
+## Testing
+- Verified JSON structure for valid formatting
+- Confirmed folder and file paths match QhySync starter repo conventions
+
+## Notes
+- This template can be used by automation scripts or GitHub Actions to scaffold new projects
+- Ensures consistency across all Qhy-Projects
+- Fully compatible with CI/CD workflows and QhySync AI PR note generation
+
+## Next Steps / Future Considerations
+- Integrate with repo creation scripts to auto-generate new projects from this template
+- Add optional metadata for automated README population
