@@ -1,3 +1,4 @@
+[![DeepScan grade](https://deepscan.io/api/teams/28029/projects/30322/branches/973211/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=28029&pid=30322&bid=973211)
 # Qhy Projects – Reinventing Code from the Core
 
 Welcome to **Qhy-Projects**, the home of the **Qhy Language** — a next-gen system-level programming language designed for intelligent performance, seamless integration, and quantum-ready systems. This repository showcases the ongoing development, modules, and experimental builds powering the future of digital interaction.
