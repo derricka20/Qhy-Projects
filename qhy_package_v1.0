@@ -1,0 +1,832 @@
+# QhyNLP with Perl 5 Integration
+## Implementation Package (v1.0.0)
+
+This upgrade package provides a complete implementation of QhyNLP language with seamless Perl 5 integration.
+
+## Package Structure
+
+```
+QhyNLP-Upgrade/
+├── install.sh
+├── README.md
+├── VERSION
+├── src/
+│   ├── compiler/
+│   │   ├── lexer.h
+│   │   ├── lexer.cpp
+│   │   ├── parser.h
+│   │   ├── parser.cpp
+│   │   ├── ast.h
+│   │   └── ast.cpp
+│   ├── interpreter/
+│   │   ├── interpreter.h
+│   │   ├── interpreter.cpp
+│   │   ├── environment.h
+│   │   └── environment.cpp
+│   ├── runtime/
+│   │   ├── value.h
+│   │   ├── value.cpp
+│   │   ├── perl_bridge.h
+│   │   └── perl_bridge.cpp
+│   └── stdlib/
+│       ├── nlp.h
+│       ├── nlp.cpp
+│       ├── io.h
+│       └── io.cpp
+├── include/
+│   └── qhynlp/
+│       ├── qhynlp.h
+│       └── perl_integration.h
+├── lib/
+│   ├── libqhynlp.so
+│   └── libqhynlp_perl.so
+├── bin/
+│   ├── qhynlp
+│   └── qhynlp-perl
+├── perl/
+│   ├── QhyNLP.pm
+│   └── QhyNLP/
+│       ├── Bridge.pm
+│       └── NLP.pm
+└── examples/
+    ├── basic/
+    │   ├── hello_world.qhy
+    │   └── variables.qhy
+    ├── nlp/
+    │   ├── tokenization.qhy
+    │   ├── sentiment_analysis.qhy
+    │   └── entity_extraction.qhy
+    └── perl/
+        ├── perl_block.qhy
+        ├── smart_call.qhy
+        └── hybrid_processing.qhy
+```
+
+## Core Implementation Files
+
+### 1. Lexical Analysis and Parsing
+
+#### src/compiler/lexer.h
+```cpp
+#ifndef QHYNLP_LEXER_H
+#define QHYNLP_LEXER_H
+
+#include <string>
+#include <vector>
+
+namespace QhyNLP {
+
+enum TokenType {
+    // Single character tokens
+    TOKEN_LEFT_PAREN, TOKEN_RIGHT_PAREN,
+    TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
+    TOKEN_LEFT_BRACKET, TOKEN_RIGHT_BRACKET,
+    TOKEN_COMMA, TOKEN_DOT, TOKEN_MINUS, TOKEN_PLUS,
+    TOKEN_SEMICOLON, TOKEN_SLASH, TOKEN_STAR, TOKEN_COLON,
+    
+    // One or two character tokens
+    TOKEN_BANG, TOKEN_BANG_EQUAL,
+    TOKEN_EQUAL, TOKEN_EQUAL_EQUAL,
+    TOKEN_GREATER, TOKEN_GREATER_EQUAL,
+    TOKEN_LESS, TOKEN_LESS_EQUAL,
+    
+    // Literals
+    TOKEN_IDENTIFIER, TOKEN_STRING, TOKEN_NUMBER,
+    
+    // Keywords
+    TOKEN_AND, TOKEN_CLASS, TOKEN_ELSE, TOKEN_FALSE,
+    TOKEN_FOR, TOKEN_FUNCTION, TOKEN_IF, TOKEN_NULL,
+    TOKEN_OR, TOKEN_RETURN, TOKEN_SUPER, TOKEN_THIS,
+    TOKEN_TRUE, TOKEN_VAR, TOKEN_WHILE, TOKEN_END,
+    TOKEN_IMPORT, TOKEN_EXPORT,
+    
+    // Perl integration
+    TOKEN_PERL, TOKEN_PERL_CODE,
+    
+    TOKEN_ERROR, TOKEN_EOF
+};
+
+struct Token {
+    TokenType type;
+    std::string lexeme;
+    int line;
+    
+    Token(TokenType type, const std::string& lexeme, int line)
+        : type(type), lexeme(lexeme), line(line) {}
+};
+
+class Lexer {
+public:
+    Lexer(const std::string& source);
+    std::vector<Token> scanTokens();
+    
+private:
+    const std::string source;
+    std::vector<Token> tokens;
+    int start = 0;
+    int current = 0;
+    int line = 1;
+    
+    bool isAtEnd() const;
+    char advance();
+    void scanToken();
+    void addToken(TokenType type);
+    void addToken(TokenType type, const std::string& value);
+    bool match(char expected);
+    char peek() const;
+    char peekNext() const;
+    bool isDigit(char c) const;
+    bool isAlpha(char c) const;
+    bool isAlphaNumeric(char c) const;
+    void scanString();
+    void scanNumber();
+    void scanIdentifier();
+    void scanPerlBlock();
+};
+
+} // namespace QhyNLP
+
+#endif // QHYNLP_LEXER_H
+```
+
+#### src/compiler/lexer.cpp
+```cpp
+#include "lexer.h"
+#include <map>
+#include <cctype>
+#include <iostream>
+
+namespace QhyNLP {
+
+static std::map<std::string, TokenType> keywords = {
+    {"and", TOKEN_AND},
+    {"class", TOKEN_CLASS},
+    {"else", TOKEN_ELSE},
+    {"false", TOKEN_FALSE},
+    {"for", TOKEN_FOR},
+    {"function", TOKEN_FUNCTION},
+    {"if", TOKEN_IF},
+    {"null", TOKEN_NULL},
+    {"or", TOKEN_OR},
+    {"return", TOKEN_RETURN},
+    {"super", TOKEN_SUPER},
+    {"this", TOKEN_THIS},
+    {"true", TOKEN_TRUE},
+    {"var", TOKEN_VAR},
+    {"while", TOKEN_WHILE},
+    {"end", TOKEN_END},
+    {"import", TOKEN_IMPORT},
+    {"export", TOKEN_EXPORT},
+    {"perl", TOKEN_PERL}
+};
+
+Lexer::Lexer(const std::string& source) : source(source) {}
+
+std::vector<Token> Lexer::scanTokens() {
+    while (!isAtEnd()) {
+        start = current;
+        scanToken();
+    }
+    
+    tokens.push_back(Token(TOKEN_EOF, "", line));
+    return tokens;
+}
+
+bool Lexer::isAtEnd() const {
+    return current >= source.length();
+}
+
+char Lexer::advance() {
+    return source[current++];
+}
+
+void Lexer::scanToken() {
+    char c = advance();
+    
+    switch (c) {
+        // Single character tokens
+        case '(': addToken(TOKEN_LEFT_PAREN); break;
+        case ')': addToken(TOKEN_RIGHT_PAREN); break;
+        case '{': 
+            if (!tokens.empty() && tokens.back().type == TOKEN_PERL) {
+                scanPerlBlock();
+            } else {
+                addToken(TOKEN_LEFT_BRACE);
+            }
+            break;
+        case '}': addToken(TOKEN_RIGHT_BRACE); break;
+        case '[': addToken(TOKEN_LEFT_BRACKET); break;
+        case ']': addToken(TOKEN_RIGHT_BRACKET); break;
+        case ',': addToken(TOKEN_COMMA); break;
+        case '.': addToken(TOKEN_DOT); break;
+        case '-': addToken(TOKEN_MINUS); break;
+        case '+': addToken(TOKEN_PLUS); break;
+        case ';': addToken(TOKEN_SEMICOLON); break;
+        case '*': addToken(TOKEN_STAR); break;
+        case ':': addToken(TOKEN_COLON); break;
+        
+        // One or two character tokens
+        case '!': addToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG); break;
+        case '=': addToken(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL); break;
+        case '<': addToken(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS); break;
+        case '>': addToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER); break;
+        
+        // Comments
+        case '#':
+            while (peek() != '\n' && !isAtEnd()) advance();
+            break;
+            
+        // Whitespace
+        case ' ':
+        case '\r':
+        case '\t':
+            break;
+            
+        case '\n':
+            line++;
+            break;
+            
+        // String literals
+        case '"': scanString(); break;
+        
+        default:
+            if (isDigit(c)) {
+                scanNumber();
+            } else if (isAlpha(c)) {
+                scanIdentifier();
+            } else {
+                std::cerr << "Unexpected character at line " << line << ": " << c << std::endl;
+            }
+            break;
+    }
+}
+
+void Lexer::addToken(TokenType type) {
+    addToken(type, "");
+}
+
+void Lexer::addToken(TokenType type, const std::string& value) {
+    std::string lexeme;
+    if (value.empty()) {
+        lexeme = source.substr(start, current - start);
+    } else {
+        lexeme = value;
+    }
+    tokens.push_back(Token(type, lexeme, line));
+}
+
+bool Lexer::match(char expected) {
+    if (isAtEnd() || source[current] != expected) {
+        return false;
+    }
+    
+    current++;
+    return true;
+}
+
+char Lexer::peek() const {
+    if (isAtEnd()) return '\0';
+    return source[current];
+}
+
+char Lexer::peekNext() const {
+    if (current + 1 >= source.length()) return '\0';
+    return source[current + 1];
+}
+
+bool Lexer::isDigit(char c) const {
+    return c >= '0' && c <= '9';
+}
+
+bool Lexer::isAlpha(char c) const {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_';
+}
+
+bool Lexer::isAlphaNumeric(char c) const {
+    return isAlpha(c) || isDigit(c);
+}
+
+void Lexer::scanString() {
+    while (peek() != '"' && !isAtEnd()) {
+        if (peek() == '\n') line++;
+        advance();
+    }
+    
+    if (isAtEnd()) {
+        std::cerr << "Unterminated string at line " << line << std::endl;
+        return;
+    }
+    
+    // Consume the closing "
+    advance();
+    
+    // Extract the string without the quotes
+    std::string value = source.substr(start + 1, current - start - 2);
+    addToken(TOKEN_STRING, value);
+}
+
+void Lexer::scanNumber() {
+    while (isDigit(peek())) advance();
+    
+    // Look for a decimal point
+    if (peek() == '.' && isDigit(peekNext())) {
+        // Consume the decimal point
+        advance();
+        
+        while (isDigit(peek())) advance();
+    }
+    
+    addToken(TOKEN_NUMBER);
+}
+
+void Lexer::scanIdentifier() {
+    while (isAlphaNumeric(peek())) advance();
+    
+    std::string text = source.substr(start, current - start);
+    
+    // Check if the identifier is a keyword
+    auto it = keywords.find(text);
+    TokenType type = (it != keywords.end()) ? it->second : TOKEN_IDENTIFIER;
+    
+    addToken(type);
+}
+
+void Lexer::scanPerlBlock() {
+    int braceCount = 1;
+    std::string perlCode;
+    
+    while (braceCount > 0 && !isAtEnd()) {
+        char c = advance();
+        
+        if (c == '{') braceCount++;
+        else if (c == '}') braceCount--;
+        
+        if (braceCount > 0) {
+            perlCode += c;
+        }
+        
+        if (c == '\n') line++;
+    }
+    
+    if (braceCount > 0) {
+        std::cerr << "Unterminated Perl block at line " << line << std::endl;
+        return;
+    }
+    
+    addToken(TOKEN_PERL_CODE, perlCode);
+}
+
+} // namespace QhyNLP
+```
+
+#### src/compiler/ast.h
+```cpp
+#ifndef QHYNLP_AST_H
+#define QHYNLP_AST_H
+
+#include <string>
+#include <vector>
+#include <memory>
+#include <map>
+
+namespace QhyNLP {
+
+enum class ExprType {
+    Binary,
+    Grouping,
+    Literal,
+    Unary,
+    Variable,
+    Assignment,
+    Call,
+    Get,
+    Set,
+    This,
+    Super,
+    Array,
+    Index,
+    SmartCall
+};
+
+enum class StmtType {
+    Expression,
+    Print,
+    Var,
+    Block,
+    If,
+    While,
+    For,
+    Function,
+    Return,
+    Class,
+    Import,
+    Export,
+    Perl
+};
+
+enum class LiteralType {
+    Number,
+    String,
+    Boolean,
+    Null
+};
+
+struct Literal {
+    LiteralType type;
+    union {
+        double number;
+        bool boolean;
+    };
+    std::string string;
+    
+    static Literal Number(double value) {
+        Literal lit;
+        lit.type = LiteralType::Number;
+        lit.number = value;
+        return lit;
+    }
+    
+    static Literal String(const std::string& value) {
+        Literal lit;
+        lit.type = LiteralType::String;
+        lit.string = value;
+        return lit;
+    }
+    
+    static Literal Boolean(bool value) {
+        Literal lit;
+        lit.type = LiteralType::Boolean;
+        lit.boolean = value;
+        return lit;
+    }
+    
+    static Literal Null() {
+        Literal lit;
+        lit.type = LiteralType::Null;
+        return lit;
+    }
+};
+
+class ASTVisitor;
+
+class Expr {
+public:
+    virtual ~Expr() = default;
+    virtual ExprType getType() const = 0;
+    virtual void accept(ASTVisitor& visitor) = 0;
+};
+
+class Stmt {
+public:
+    virtual ~Stmt() = default;
+    virtual StmtType getType() const = 0;
+    virtual void accept(ASTVisitor& visitor) = 0;
+};
+
+class BinaryExpr : public Expr {
+public:
+    std::unique_ptr<Expr> left;
+    std::string op;
+    std::unique_ptr<Expr> right;
+    
+    BinaryExpr(std::unique_ptr<Expr> left, const std::string& op, std::unique_ptr<Expr> right)
+        : left(std::move(left)), op(op), right(std::move(right)) {}
+    
+    ExprType getType() const override { return ExprType::Binary; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class LiteralExpr : public Expr {
+public:
+    Literal value;
+    
+    LiteralExpr(const Literal& value) : value(value) {}
+    
+    ExprType getType() const override { return ExprType::Literal; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class VariableExpr : public Expr {
+public:
+    std::string name;
+    
+    VariableExpr(const std::string& name) : name(name) {}
+    
+    ExprType getType() const override { return ExprType::Variable; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class AssignExpr : public Expr {
+public:
+    std::string name;
+    std::unique_ptr<Expr> value;
+    
+    AssignExpr(const std::string& name, std::unique_ptr<Expr> value)
+        : name(name), value(std::move(value)) {}
+    
+    ExprType getType() const override { return ExprType::Assignment; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class CallExpr : public Expr {
+public:
+    std::unique_ptr<Expr> callee;
+    std::vector<std::unique_ptr<Expr>> arguments;
+    
+    CallExpr(std::unique_ptr<Expr> callee, std::vector<std::unique_ptr<Expr>> arguments)
+        : callee(std::move(callee)), arguments(std::move(arguments)) {}
+    
+    ExprType getType() const override { return ExprType::Call; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class SmartCallExpr : public Expr {
+public:
+    std::unique_ptr<Expr> callInfo;
+    
+    SmartCallExpr(std::unique_ptr<Expr> callInfo)
+        : callInfo(std::move(callInfo)) {}
+    
+    ExprType getType() const override { return ExprType::SmartCall; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class ExprStmt : public Stmt {
+public:
+    std::unique_ptr<Expr> expression;
+    
+    ExprStmt(std::unique_ptr<Expr> expression)
+        : expression(std::move(expression)) {}
+    
+    StmtType getType() const override { return StmtType::Expression; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class PrintStmt : public Stmt {
+public:
+    std::unique_ptr<Expr> expression;
+    
+    PrintStmt(std::unique_ptr<Expr> expression)
+        : expression(std::move(expression)) {}
+    
+    StmtType getType() const override { return StmtType::Print; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class VarStmt : public Stmt {
+public:
+    std::string name;
+    std::unique_ptr<Expr> initializer;
+    
+    VarStmt(const std::string& name, std::unique_ptr<Expr> initializer)
+        : name(name), initializer(std::move(initializer)) {}
+    
+    StmtType getType() const override { return StmtType::Var; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class BlockStmt : public Stmt {
+public:
+    std::vector<std::unique_ptr<Stmt>> statements;
+    
+    BlockStmt(std::vector<std::unique_ptr<Stmt>> statements)
+        : statements(std::move(statements)) {}
+    
+    StmtType getType() const override { return StmtType::Block; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class IfStmt : public Stmt {
+public:
+    std::unique_ptr<Expr> condition;
+    std::unique_ptr<Stmt> thenBranch;
+    std::unique_ptr<Stmt> elseBranch;
+    
+    IfStmt(std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> thenBranch, std::unique_ptr<Stmt> elseBranch)
+        : condition(std::move(condition)), thenBranch(std::move(thenBranch)), elseBranch(std::move(elseBranch)) {}
+    
+    StmtType getType() const override { return StmtType::If; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class FunctionStmt : public Stmt {
+public:
+    std::string name;
+    std::vector<std::string> params;
+    std::vector<std::unique_ptr<Stmt>> body;
+    
+    FunctionStmt(const std::string& name, std::vector<std::string> params, std::vector<std::unique_ptr<Stmt>> body)
+        : name(name), params(std::move(params)), body(std::move(body)) {}
+    
+    StmtType getType() const override { return StmtType::Function; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class PerlStmt : public Stmt {
+public:
+    std::string code;
+    
+    PerlStmt(const std::string& code) : code(code) {}
+    
+    StmtType getType() const override { return StmtType::Perl; }
+    void accept(ASTVisitor& visitor) override;
+};
+
+class ASTVisitor {
+public:
+    virtual void visitBinaryExpr(BinaryExpr* expr) = 0;
+    virtual void visitLiteralExpr(LiteralExpr* expr) = 0;
+    virtual void visitVariableExpr(VariableExpr* expr) = 0;
+    virtual void visitAssignExpr(AssignExpr* expr) = 0;
+    virtual void visitCallExpr(CallExpr* expr) = 0;
+    virtual void visitSmartCallExpr(SmartCallExpr* expr) = 0;
+    
+    virtual void visitExprStmt(ExprStmt* stmt) = 0;
+    virtual void visitPrintStmt(PrintStmt* stmt) = 0;
+    virtual void visitVarStmt(VarStmt* stmt) = 0;
+    virtual void visitBlockStmt(BlockStmt* stmt) = 0;
+    virtual void visitIfStmt(IfStmt* stmt) = 0;
+    virtual void visitFunctionStmt(FunctionStmt* stmt) = 0;
+    virtual void visitPerlStmt(PerlStmt* stmt) = 0;
+};
+
+} // namespace QhyNLP
+
+#endif // QHYNLP_AST_H
+```
+
+### 2. Perl Integration Bridge
+
+#### src/runtime/perl_bridge.h
+```cpp
+#ifndef QHYNLP_PERL_BRIDGE_H
+#define QHYNLP_PERL_BRIDGE_H
+
+#include <string>
+#include <vector>
+#include <map>
+#include "value.h"
+
+// Forward declaration to avoid including Perl headers
+typedef struct interpreter PerlInterpreter;
+
+namespace QhyNLP {
+
+class PerlBridge {
+public:
+    PerlBridge();
+    ~PerlBridge();
+    
+    // Execute Perl code and return result
+    Value evaluatePerl(const std::string& code);
+    
+    // Call a Perl function
+    Value callPerlFunction(const std::string& function, const std::vector<Value>& args);
+    
+    // Load a Perl module
+    bool loadPerlModule(const std::string& module);
+    
+    // Check if Perl interpreter is initialized
+    bool isInitialized() const;
+    
+    // Convert between QhyNLP and Perl types
+    Value perlToQhyValue(void* sv);
+    void* qhyValueToPerl(const Value& value);
+    
+private:
+    PerlInterpreter* perl;
+    bool initialized;
+    
+    // Initialize Perl interpreter
+    void initPerl();
+    
+    // Shutdown Perl interpreter
+    void shutdownPerl();
+    
+    // Convert Perl scalar to QhyNLP value
+    Value convertPerlScalar(void* sv);
+    
+    // Convert Perl array to QhyNLP array
+    Value convertPerlArray(void* av);
+    
+    // Convert Perl hash to QhyNLP object
+    Value convertPerlHash(void* hv);
+};
+
+} // namespace QhyNLP
+
+#endif // QHYNLP_PERL_BRIDGE_H
+```
+
+#### src/runtime/perl_bridge.cpp
+```cpp
+#include "perl_bridge.h"
+#include <EXTERN.h>
+#include <perl.h>
+#include <XSUB.h>
+#include <iostream>
+
+namespace QhyNLP {
+
+PerlBridge::PerlBridge() : perl(nullptr), initialized(false) {
+    initPerl();
+}
+
+PerlBridge::~PerlBridge() {
+    shutdownPerl();
+}
+
+void PerlBridge::initPerl() {
+    if (initialized) return;
+    
+    int argc = 3;
+    char *argv[] = {const_cast<char*>(""), const_cast<char*>("-e"), const_cast<char*>("0")};
+    char **env = nullptr;
+    
+    PERL_SYS_INIT3(&argc, (char***)&argv, (char***)&env);
+    
+    perl = perl_alloc();
+    if (!perl) {
+        std::cerr << "Failed to allocate Perl interpreter" << std::endl;
+        return;
+    }
+    
+    perl_construct(perl);
+    
+    int status = perl_parse(perl, nullptr, argc, argv, env);
+    if (status != 0) {
+        std::cerr << "Failed to parse Perl interpreter" << std::endl;
+        perl_destruct(perl);
+        perl_free(perl);
+        perl = nullptr;
+        PERL_SYS_TERM();
+        return;
+    }
+    
+    status = perl_run(perl);
+    if (status != 0) {
+        std::cerr << "Failed to run Perl interpreter" << std::endl;
+        perl_destruct(perl);
+        perl_free(perl);
+        perl = nullptr;
+        PERL_SYS_TERM();
+        return;
+    }
+    
+    // Load standard NLP modules
+    eval_pv("use Encode;", TRUE);
+    eval_pv("use Lingua::EN::Tokenizer;", TRUE);
+    eval_pv("use Lingua::EN::Tagger;", TRUE);
+    
+    initialized = true;
+}
+
+void PerlBridge::shutdownPerl() {
+    if (!initialized || !perl) return;
+    
+    perl_destruct(perl);
+    perl_free(perl);
+    PERL_SYS_TERM();
+    
+    perl = nullptr;
+    initialized = false;
+}
+
+bool PerlBridge::isInitialized() const {
+    return initialized && perl != nullptr;
+}
+
+Value PerlBridge::evaluatePerl(const std::string& code) {
+    if (!isInitialized()) {
+        std::cerr << "Perl interpreter not initialized" << std::endl;
+        return Value::null();
+    }
+    
+    dSP;
+    ENTER;
+    SAVETMPS;
+    
+    SV* result = eval_pv(code.c_str(), FALSE);
+    
+    if (SvTRUE(ERRSV)) {
+        std::string error = SvPV_nolen(ERRSV);
+        std::cerr << "Perl evaluation error: " << error << std::endl;
+        FREETMPS;
+        LEAVE;
+        return Value::null();
+    }
+    
+    Value value = perlToQhyValue(result);
+    
+    FREETMPS;
+    LEAVE;
+    
+    return value;
+}
+
+Value PerlBridge::callPerlFunction(const std::string& function, const std::vector<Value>& args) {
+    if (!isInitialized()) {
+        std::cerr << "Perl interpreter not initialized" << std::endl;
+        return Value::null();
+    }
+    
