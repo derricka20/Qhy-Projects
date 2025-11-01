@@ -1,0 +1,15 @@
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/bin/Debug/net8.0/Qhy-ProjectBuilder
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/bin/Debug/net8.0/Qhy-ProjectBuilder.deps.json
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/bin/Debug/net8.0/Qhy-ProjectBuilder.runtimeconfig.json
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/bin/Debug/net8.0/Qhy-ProjectBuilder.dll
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/bin/Debug/net8.0/Qhy-ProjectBuilder.pdb
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/obj/Debug/net8.0/Qhy-ProjectBuilder.GeneratedMSBuildEditorConfig.editorconfig
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/obj/Debug/net8.0/Qhy-ProjectBuilder.AssemblyInfoInputs.cache
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/obj/Debug/net8.0/Qhy-ProjectBuilder.AssemblyInfo.cs
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/obj/Debug/net8.0/Qhy-ProjectBuilder.csproj.CoreCompileInputs.cache
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/obj/Debug/net8.0/Qhy-ProjectBuilder.sourcelink.json
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/obj/Debug/net8.0/Qhy-ProjectBuilder.dll
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/obj/Debug/net8.0/refint/Qhy-ProjectBuilder.dll
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/obj/Debug/net8.0/Qhy-ProjectBuilder.pdb
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/obj/Debug/net8.0/Qhy-ProjectBuilder.genruntimeconfig.cache
+/workspaces/Qhy-Projects/Qhy-ProjectBuilder/obj/Debug/net8.0/ref/Qhy-ProjectBuilder.dll

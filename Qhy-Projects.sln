@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Qhy-ProjectBuilder", "Qhy-ProjectBuilder\Qhy-ProjectBuilder.csproj", "{8F523BC7-7D67-9096-050B-C068AF5804DB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8F523BC7-7D67-9096-050B-C068AF5804DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F523BC7-7D67-9096-050B-C068AF5804DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F523BC7-7D67-9096-050B-C068AF5804DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F523BC7-7D67-9096-050B-C068AF5804DB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BFEEC63C-3FEC-49A0-AE9D-32BE8A7A05D5}
+	EndGlobalSection
+EndGlobal

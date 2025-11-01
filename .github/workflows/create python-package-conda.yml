@@ -1,0 +1,140 @@
+📜 Upgrade Spell: Enhanced Conda Environment for QhySync Systems
+
+🔄 Modular extension of create-python-package-conda.yml
+
+📁 Location: /upgrades/envs/qhy-upgrade-core.yml
+
+name: qhynlp_env_core_upgrade
+
+channels:
+
+conda-forge
+
+defaults
+
+
+dependencies:
+
+🧰 Dev Tools
+
+black
+
+flake8
+
+mypy
+
+pre-commit
+
+isort
+
+yapf
+
+pdoc3
+
+
+🪄 GUI Frameworks
+
+pyqt
+
+pyqt6
+
+pyqtgraph
+
+qtconsole
+
+pillow
+
+
+🧠 NLP & Deep Learning
+
+gensim
+
+nltk
+
+spacy
+
+tensorflow
+
+pytorch
+
+cpuonly  # Optional, GPU support removed for minimal setup
+
+torchvision
+
+
+🌐 Blockchain Development
+
+web3
+
+brownie
+
+eth-brownie
+
+py-solc-x
+
+eth-account
+
+
+🔒 Security Layers
+
+cryptography
+
+pyjwt
+
+python-dotenv
+
+passlib
+
+
+📊 Visualization and Dashboards
+
+plotly
+
+bokeh
+
+dash
+
+jupyter-dash
+
+
+⚛️ Quantum & Scientific Computing
+
+qiskit
+
+sympy
+
+networkx
+
+numba
+
+
+🐍 Pip Scrolls (non-Conda realm)
+
+pip:
+
+fastapi
+
+uvicorn
+
+typer
+
+openai
+
+langchain
+
+llama-index
+
+qhy-nlp-mimicry-core==1.0.0
+
+qhy-nlp-crawler-core==1.0.0
+
+
+
+🧙 Instructions:
+
+Run this as an upgrade spell AFTER creating base env:
+
+conda env update -n qhynlp_env -f /upgrades/envs/qhy-upgrade-core.yml
+
+Do not summon this into production unless reviewed and cryptographically signed.
+
