@@ -1232,3 +1232,182 @@ git commit -m "docs(spec): sync worker/database/route manifests with latest plat
 git push -u origin docs/spec-sync-worker-manifests
 ```
 
+
+### 27.11 Deep dive: custom Git commands + custom Git client UIs (QhySync ecosystem)
+
+This section defines a custom Git ergonomics layer for multi-worker, multi-schema, multi-env delivery.
+
+#### 27.11.1 Custom git alias pack (`.gitconfig`)
+
+```ini
+[alias]
+  st = status -sb
+  co = checkout
+  br = branch -vv
+  lg = log --oneline --graph --decorate --all
+  last = log -1 HEAD --stat
+  wip = !git add -A && git commit -m "wip: checkpoint"
+
+  # ecosystem-aware
+  workers = !git diff --name-only | grep '^workers/' || true
+  contracts = !git diff --name-only | grep -E '^(contracts|schemas)/' || true
+  dbmigs = !git diff --name-only | grep '^migrations/' || true
+  spec = !git diff -- Qhy-Projects/docs/qhysync-cloudflare-unified-router-spec.md
+
+  # scoped review helpers
+  rv-gateway = diff -- workers/gateway-worker
+  rv-chat = diff -- workers/chat-worker
+  rv-voice = diff -- workers/voice-stt-worker workers/voice-tts-worker workers/voice-sts-worker
+  rv-agents = diff -- workers/agent-manager-worker workers/agent-task-worker workers/agent-vote-worker workers/agent-pay-worker
+
+  # release helpers
+  release-tag = !f(){ git tag -a "$1" -m "QhySync release $1"; }; f
+  release-push = !f(){ git push origin "$1"; }; f
+
+  # rollback helper
+  rollback-preview = !f(){ git log --oneline --decorate "$1"..HEAD; }; f
+```
+
+#### 27.11.2 Custom command wrappers (`scripts/git/`)
+
+- `scripts/git/qhy-branch`:
+  - enforce branch naming conventions (`feat/*`, `fix/*`, `chore/*`, `release/*`, `hotfix/*`).
+- `scripts/git/qhy-commit`:
+  - validate conventional commit + worker/domain scope.
+- `scripts/git/qhy-pr-check`:
+  - fail if branch modifies worker code without contract/schema updates when required.
+- `scripts/git/qhy-release`:
+  - bump version, generate release notes from labels/scopes, tag and push.
+- `scripts/git/qhy-rollback`:
+  - resolve last stable tag and produce rollback plan output.
+
+#### 27.11.3 Commit message conventions (ecosystem-scoped)
+
+Use: `<type>(<scope>): <summary>`
+
+Scopes:
+- `gateway`, `auth`, `chat`, `training`, `agents`, `voice`, `avatar`, `docs`, `schemas`, `migrations`, `ci`, `security`, `obsidian`, `deploy`.
+
+Examples:
+- `feat(chat): add tool-call timeline chunking`
+- `fix(gateway): patch rate-limit token leak`
+- `chore(migrations): add hooks-db retry index`
+- `docs(spec): update worker contract matrix`
+
+#### 27.11.4 Pre-commit and pre-push hook strategy
+
+- Pre-commit:
+  - staged lint (changed TS files only)
+  - schema validation for changed JSON/YAML contracts
+  - markdown lint for spec changes
+- Pre-push:
+  - targeted unit tests for touched workers
+  - migration dry-run when `migrations/**` changed
+  - block push if secrets-like patterns detected
+
+#### 27.11.5 Custom Git client UI blueprint
+
+Build a QhySync-native Git client panel in the app shell with these panes:
+
+1. **Branch health panel**
+   - ahead/behind count
+   - uncommitted file count
+   - protected branch warning badges
+2. **Worker impact map**
+   - highlight touched workers by domain color
+   - infer blast radius from service bindings
+3. **Contract drift panel**
+   - detect route/schema changes without corresponding tests
+4. **Migration safety panel**
+   - show pending D1 migrations and apply order
+5. **Release readiness panel**
+   - checklist from CI gates + governance approvals
+6. **Rollback panel**
+   - last stable tags, linked deployments, one-click rollback plan generation
+7. **PR narrative assistant**
+   - auto-summarize changed files by domain and produce PR template sections
+8. **Secrets policy panel**
+   - flag suspicious token strings pre-commit
+9. **Audit trace panel**
+   - tie commit SHAs to deployment IDs and incident tickets
+10. **Docs/spec sync panel**
+   - flag architecture spec drift vs manifests/routes in repo
+
+#### 27.11.6 Suggested custom Git UI controls (interaction layer)
+
+- command palette actions:
+  - `Create Worker Feature Branch`
+  - `Generate Contract Diff`
+  - `Run Scoped Tests`
+  - `Prepare Release Tag`
+  - `Create Hotfix Branch`
+  - `Build Rollback Packet`
+- inline quick-actions on changed file:
+  - stage hunk
+  - link to owning worker manifest
+  - open related schema
+  - run local check for this file type
+
+#### 27.11.7 Suggested enhancement backlog (long list)
+
+1. Add branch naming validator bot in CI.
+2. Add commit scope validator for worker domains.
+3. Add auto-labeling by changed path (`workers/chat-worker` => `chat`).
+4. Add required reviewers by worker ownership map.
+5. Add policy: changes to `gateway-worker` require security reviewer.
+6. Add policy: migrations require DBA reviewer.
+7. Add policy: production workflow edits require platform lead approval.
+8. Add automatic changelog generation from commit scopes.
+9. Add release note generator grouped by worker category.
+10. Add PR size classifier with warnings for mega PRs.
+11. Add path-based CODEOWNERS for worker directories.
+12. Add branch freshness checker (`develop` rebase age).
+13. Add stale-PR nudges tied to risk class.
+14. Add deployment impact score on PR page.
+15. Add “contract mismatch” check between routes and schemas.
+16. Add test coverage delta gate per worker.
+17. Add D1 migration linting (index naming/foreign key checks).
+18. Add migration rollback simulation in CI.
+19. Add queue/DO compatibility checks in integration tests.
+20. Add generated dependency graph of worker service bindings.
+21. Add visualization of event hooks added/removed per PR.
+22. Add “breaking change” detector for API routes.
+23. Add API version bump reminder when breaking changes detected.
+24. Add swagger/openapi diff summaries in PR comments.
+25. Add local command to spin up only touched workers.
+26. Add script to replay failed webhook events in staging.
+27. Add pre-merge canary deployment job for high-risk workers.
+28. Add synthetic smoke tests for `/api/v1/health` and critical routes.
+29. Add incident template autofill from merged hotfix PRs.
+30. Add rollback drill automation monthly via cron.
+31. Add release train calendar integration in PR UI.
+32. Add “merge window” guard for production branches.
+33. Add artifact retention policy per risk tier.
+34. Add cost-estimate report for worker changes (CPU/network/storage).
+35. Add auto-open issue when SLO budget drops post-deploy.
+36. Add policy snapshot attachment in every release PR.
+37. Add secrets scan baseline and allowlist workflow.
+38. Add token rotation reminder automation.
+39. Add AI-generated test suggestions by changed scope.
+40. Add AI-generated migration risk notes.
+41. Add AI-generated user-facing changelog variant.
+42. Add traceability table linking commit->deployment->incident.
+43. Add one-click route rollback proposal from previous manifest.
+44. Add environment drift checker (staging vs production vars).
+45. Add wrangler config diff checker across environments.
+46. Add build cache optimization for worker matrix jobs.
+47. Add flaky test quarantine workflow with ownership routing.
+48. Add post-merge docs/spec sync validation.
+49. Add diagram auto-regeneration when manifests change.
+50. Add per-worker readiness scorecard dashboard.
+51. Add fine-grained permissions for Git UI actions.
+52. Add audit log export for compliance reviews.
+53. Add contributor onboarding wizard for first PR.
+54. Add branch cleanup bot for merged/abandoned branches.
+55. Add semantic commit template dropdown in custom UI.
+56. Add release confidence score based on checks + recent incidents.
+57. Add auto-generated rollback commands in deployment summary.
+58. Add local dev “flight recorder” for reproducible bug reports.
+59. Add cross-repo dependency notification when shared contracts change.
+60. Add quarterly governance review report auto-generated from git history.
+
